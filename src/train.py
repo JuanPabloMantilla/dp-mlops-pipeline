@@ -39,7 +39,7 @@ def main():
     preprocessor = ColumnTransformer(
         transformers=[
             ('num', StandardScaler(), numerical_features),
-            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
+            ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), categorical_features)
         ])
 
     # Split data
