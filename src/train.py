@@ -1,4 +1,6 @@
-# 1. Imports - Bring in all the necessary libraries
+# 1. Imports
+import mlflow
+import mlflow.tensorflow
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -49,45 +51,64 @@ def main():
     X_train_processed = preprocessor.fit_transform(X_train)
     X_test_processed = preprocessor.transform(X_test)
 
-    # 4. Define and Compile the Model
-    model = tf.keras.Sequential([
-        tf.keras.layers.Dense(64, activation='relu', input_shape=(X_train_processed.shape[1],)),
-        tf.keras.layers.Dense(32, activation='relu'),
-        tf.keras.layers.Dense(1, activation='sigmoid')
-    ])
-    
-    # 5. Set up DP Optimizer and Compile
-    # These are your key DP parameters!
-    l2_norm_clip = 1.0
-    noise_multiplier = 1.1
-    num_microbatches = 1 # Set to 1 for simplicity, can be batch_size for standard DP-SGD
-    learning_rate = 0.001
+    with mlflow.start_run():
+        # 4. Define and Compile the Model
+        model = tf.keras.Sequential([
+            tf.keras.layers.Dense(64, activation='relu', input_shape=(X_train_processed.shape[1],)),
+            tf.keras.layers.Dense(32, activation='relu'),
+            tf.keras.layers.Dense(1, activation='sigmoid')
+        ])
+        
+        # 5. Set up DP Optimizer and Compile
+        # These are your key DP parameters!
+        l2_norm_clip = 1.0
+        noise_multiplier = 1.1
+        num_microbatches = 1 # Set to 1 for simplicity, can be batch_size for standard DP-SGD
+        learning_rate = 0.001
 
-    optimizer = DPKerasAdamOptimizer(
-        l2_norm_clip=l2_norm_clip,
-        noise_multiplier=noise_multiplier,
-        num_microbatches=num_microbatches,
-        learning_rate=learning_rate)
-    
-    loss = tf.keras.losses.BinaryCrossentropy()
-    
-    model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
-    
-    # 6. Train the Model
-    batch_size = 32
-    epochs = 3
-    model.fit(X_train_processed, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_test_processed, y_test))
+        # Log parameters to MLflow
+        mlflow.log_param("l2_norm_clip", l2_norm_clip)
+        mlflow.log_param("noise_multiplier", noise_multiplier)
+        mlflow.log_param("learning_rate", learning_rate)
 
-    # 7. Evaluate and Print Metrics
-    loss, accuracy = model.evaluate(X_test_processed, y_test, verbose=0)
-    print(f"Test Accuracy: {accuracy:.4f}")
-    
-    # (Note: Calculating exact epsilon requires a dedicated library like 'dp_accounting'
-    # which we can add later. For now, we know training was private).
+        optimizer = DPKerasAdamOptimizer(
+            l2_norm_clip=l2_norm_clip,
+            noise_multiplier=noise_multiplier,
+            num_microbatches=num_microbatches,
+            learning_rate=learning_rate)
+        
+        loss = tf.keras.losses.BinaryCrossentropy()
+        model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
+        
+        # 6. Train the Model
+        batch_size = 32
+        epochs = 3
 
-    # 8. Save the Model Artifact
-    model.save('baseline_model.h5')
-    print("Model saved as baseline_model.h5")
+        # Log more parameters
+        mlflow.log_param("batch_size", batch_size)
+        mlflow.log_param("epochs", epochs)
+
+        model.fit(X_train_processed, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_test_processed, y_test))
+
+        # 7. Evaluate and Print Metrics
+        loss, accuracy = model.evaluate(X_test_processed, y_test, verbose=0)
+        print(f"Test Accuracy: {accuracy:.4f}")
+        
+        # Log the final accuracy metric
+        mlflow.log_metric("test_accuracy", accuracy)
+
+        # (Note: Calculating exact epsilon requires a dedicated library like 'dp_accounting'
+        # which we can add later. For now, we know training was private).
+
+        # 8. Log the Model Artifact
+        input_example = X_test_processed[:1]
+        mlflow.tensorflow.log_model(
+            model=model,
+            name="dp_model",
+            input_example=input_example,
+            custom_objects={'DPOptimizerClass': DPKerasAdamOptimizer}
+        )
+        print("Model logged to MLflow.")
 
 
 # Make the script executable
