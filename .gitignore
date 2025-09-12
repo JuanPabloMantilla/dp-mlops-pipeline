@@ -213,3 +213,7 @@ data/*
 
 # Ignore sensitive credentials
 client_secrets.json
+client_secrets.json.json
+
+# Ignore MLflow experiment tracking data
+mlruns/
