@@ -20,3 +20,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      
+      - name: Authenticate DVC with Google Drive
+        run: |
+          # Create the credentials file from the GitHub secret
+          echo '${{ secrets.GDRIVE_CREDENTIALS_DATA }}' > client_secrets.json
+
+      - name: Pull Data with DVC
+        run: |
+          dvc pull -v
+
+      - name: Run the ZenML Pipeline
+        run: |
+          python run.py
