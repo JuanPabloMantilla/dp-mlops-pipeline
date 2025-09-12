@@ -21,11 +21,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Pull Data with DVC
+      - name: Configure DVC and Pull Data
         env:
           GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
           GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
         run: |
+          # Explicitly configure DVC with the secrets
+          dvc remote modify --local myremote gdrive_client_id $GDRIVE_CLIENT_ID
+          dvc remote modify --local myremote gdrive_client_secret $GDRIVE_CLIENT_SECRET
+          
+          # Now, pull the data
           dvc pull -v
 
       - name: Run the ZenML Pipeline
