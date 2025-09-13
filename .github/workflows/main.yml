@@ -25,14 +25,12 @@ jobs:
         env:
           RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
         run: |
-          # Install rclone on the runner
-          sudo apt-get -y install rclone
-          # Create the rclone config file from the secret
+          sudo apt-get -y update && sudo apt-get -y install rclone
           mkdir -p ~/.config/rclone
           echo "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
-          # Now pull the data
           dvc pull -v
 
       - name: Run the ZenML Pipeline
         run: |
+          zenml init
           python run.py
