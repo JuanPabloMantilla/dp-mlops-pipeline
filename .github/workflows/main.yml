@@ -21,10 +21,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Pull Data with DVC
+      - name: Setup rclone and Pull Data
         env:
-          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
-        run: dvc pull -v
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+        run: |
+          # Install rclone on the runner
+          sudo apt-get -y install rclone
+          # Create the rclone config file from the secret
+          mkdir -p ~/.config/rclone
+          echo "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+          # Now pull the data
+          dvc pull -v
 
       - name: Run the ZenML Pipeline
         run: |
