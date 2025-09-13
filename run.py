@@ -11,6 +11,6 @@ if __name__ == "__main__":
     # Use the custom_object_scope to make Keras aware of our optimizer globally
     with tf.keras.utils.custom_object_scope(custom_objects):
         # Run the pipeline within this scope, with cache disabled for one final clean run
-        dp_training_pipeline.with_options(enable_cache=False)()
+        run = dp_training_pipeline()
     
     print("Pipeline run finished.")
