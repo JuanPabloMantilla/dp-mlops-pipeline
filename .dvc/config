@@ -1,4 +1,5 @@
 [core]
     remote = myremote
 ['remote "myremote"']
-    url = rclone://gdrive-remote/dp-mlops-dvc
+    url = s3://dp-mlops-juanp-storage
+    endpointurl = https://s3.eu-central-003.backblazeb2.com

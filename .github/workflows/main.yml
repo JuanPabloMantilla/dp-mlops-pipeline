@@ -21,13 +21,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Setup rclone and Pull Data
+      - name: Configure and Pull Data with DVC
         env:
-          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+          B2_ACCESS_KEY_ID: ${{ secrets.B2_ACCESS_KEY_ID }}
+          B2_SECRET_ACCESS_KEY: ${{ secrets.B2_SECRET_ACCESS_KEY }}
+          B2_ENDPOINT_URL: ${{ secrets.B2_ENDPOINT_URL }}
         run: |
-          sudo apt-get -y update && sudo apt-get -y install rclone
-          mkdir -p ~/.config/rclone
-          echo "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+          dvc remote modify myremote endpointurl $B2_ENDPOINT_URL
+          dvc remote modify myremote access_key_id $B2_ACCESS_KEY_ID --local
+          dvc remote modify myremote secret_access_key $B2_SECRET_ACCESS_KEY --local
           dvc pull -v
 
       - name: Run the ZenML Pipeline
