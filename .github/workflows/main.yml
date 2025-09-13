@@ -21,18 +21,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Configure DVC with Service Account and Pull Data
+      - name: Pull Data with DVC
         env:
-          GDRIVE_SA_CREDENTIALS: ${{ secrets.GDRIVE_SA_CREDENTIALS }}
-        run: |
-          # Create the service account credentials file
-          echo "$GDRIVE_SA_CREDENTIALS" > gdrive-sa.json
-
-          # Explicitly configure DVC to use this file
-          dvc remote modify myremote gdrive_service_account_json_file_path gdrive-sa.json
-          
-          # Now, pull the data non-interactively
-          dvc pull -v
+          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
+        run: dvc pull -v
 
       - name: Run the ZenML Pipeline
         run: |
