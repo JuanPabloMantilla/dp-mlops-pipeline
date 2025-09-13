@@ -7,7 +7,6 @@ import numpy as np
 @step
 def train_model(X_train_processed: np.ndarray, y_train: np.ndarray) -> str:
     """Trains a model and returns the path to the saved weights."""
-    print("Starting model training...")
     mlflow.set_experiment("DP_Model_Training")
     with mlflow.start_run():
         model = tf.keras.Sequential([

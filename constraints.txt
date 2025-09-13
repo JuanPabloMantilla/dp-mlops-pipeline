@@ -1,9 +1,0 @@
-# Our core ML and MLOps libraries with pinned versions to resolve conflicts
-tensorflow==2.15.0
-tensorflow-privacy==0.9.0
-packaging==22.0
-zenml==0.56.0
-mlflow
-dvc[gdrive]
-scikit-learn
-pandas

@@ -8,6 +8,6 @@ from .steps.evaluate_model import evaluate_model
 def dp_training_pipeline():
     """Defines the full training pipeline."""
     raw_data = ingest_data()
-    X_train, X_test, y_train, y_test, preprocessor = process_data(df=raw_data)
+    X_train, X_test, y_train, y_test, _ = process_data(df=raw_data)
     weights_path = train_model(X_train_processed=X_train, y_train=y_train)
     evaluate_model(weights_path=weights_path, X_test_processed=X_test, y_test=y_test)
