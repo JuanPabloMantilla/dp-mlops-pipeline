@@ -58,7 +58,7 @@ The system is built to automate the lifecycle of a classification model that pre
 ## Getting Started
 
 ### Prerequisites
-* Python 3.10+
+* Python 3.10 (This exact version is required to ensure compatibility between all libraries in the locked `requirements.txt` file).
 * pip (Python package installer)
 * [rclone](https://rclone.org/downloads/) installed and available in your PATH.
 * A Backblaze B2 (or other S3-compatible) account.
