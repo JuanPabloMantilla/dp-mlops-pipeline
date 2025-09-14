@@ -67,7 +67,7 @@ The system is built to automate the lifecycle of a classification model that pre
 
 1.  **Clone the repository:**
     ```sh
-    git clone [https://github.com/JuanPabloMantilla/dp-mlops-pipeline.git](https://github.com/JuanPabloMantilla/dp-mlops-pipeline.git)
+    git clone https://github.com/JuanPabloMantilla/dp-mlops-pipeline.git
     cd dp-mlops-pipeline
     ```
 2.  **Create and activate a virtual environment:**
