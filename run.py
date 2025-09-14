@@ -1,16 +1,12 @@
-from src.pipeline import dp_training_pipeline
-import tensorflow as tf
-from tensorflow_privacy.privacy.optimizers.dp_optimizer_keras import DPKerasAdamOptimizer
+# run.py
+
+from src.pipeline import dp_training_deployment_pipeline
 
 if __name__ == "__main__":
-    print("Initiating pipeline run...")
-
-    # Define the custom object dictionary that Keras needs to load our model
-    custom_objects = {"DPOptimizerClass": DPKerasAdamOptimizer}
+    print("Initiating deployment pipeline run...")
     
-    # Use the custom_object_scope to make Keras aware of our optimizer globally
-    with tf.keras.utils.custom_object_scope(custom_objects):
-        # Run the pipeline within this scope, with cache disabled for one final clean run
-        run = dp_training_pipeline()
+    # Run the pipeline with caching disabled for the first clean run.
+    # On subsequent runs, you can remove the .with_options() part.
+    dp_training_deployment_pipeline.with_options(enable_cache=False)()
     
     print("Pipeline run finished.")

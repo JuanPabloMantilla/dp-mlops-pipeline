@@ -1,3 +1,5 @@
+# src/steps/process_data.py
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -12,7 +14,6 @@ def process_data(df: pd.DataFrame) -> Tuple[
     Annotated[np.ndarray, "X_test_processed"],
     Annotated[np.ndarray, "y_train"],
     Annotated[np.ndarray, "y_test"],
-    Annotated[ColumnTransformer, "preprocessor"],
 ]:
     """Processes the raw data into training and testing sets."""
     X = df.drop('income', axis=1)
@@ -32,4 +33,4 @@ def process_data(df: pd.DataFrame) -> Tuple[
     X_train_processed = preprocessor.fit_transform(X_train)
     X_test_processed = preprocessor.transform(X_test)
 
-    return X_train_processed, X_test_processed, y_train, y_test, preprocessor
+    return X_train_processed, X_test_processed, y_train, y_test

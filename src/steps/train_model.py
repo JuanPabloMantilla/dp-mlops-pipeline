@@ -1,48 +1,44 @@
+# src/steps/train_model.py
+
 import tensorflow as tf
 from tensorflow_privacy.privacy.optimizers.dp_optimizer_keras import DPKerasAdamOptimizer
 from zenml import step
 import mlflow
 import numpy as np
+from typing_extensions import Tuple, Annotated
 
 @step
-def train_model(X_train_processed: np.ndarray, y_train: np.ndarray) -> str:
-    """Trains a model and returns the path to the saved weights."""
+def train_model(
+    X_train_processed: np.ndarray, 
+    y_train: np.ndarray
+) -> Tuple[
+    Annotated[str, "weights_path"], 
+    Annotated[str, "run_id"]
+]:
+    """Trains the model and returns the path to the weights and the MLflow run ID."""
     mlflow.set_experiment("DP_Model_Training")
-    with mlflow.start_run():
+    with mlflow.start_run() as run:
         model = tf.keras.Sequential([
             tf.keras.layers.Dense(64, activation='relu', input_shape=(X_train_processed.shape[1],)),
             tf.keras.layers.Dense(32, activation='relu'),
             tf.keras.layers.Dense(1, activation='sigmoid')
         ])
         
-        l2_norm_clip = 1.0
-        noise_multiplier = 1.1
-        learning_rate = 0.001
-        
-        mlflow.log_param("l2_norm_clip", l2_norm_clip)
-        mlflow.log_param("noise_multiplier", noise_multiplier)
-        mlflow.log_param("learning_rate", learning_rate)
-
         optimizer = DPKerasAdamOptimizer(
-            l2_norm_clip=l2_norm_clip,
-            noise_multiplier=noise_multiplier,
-            num_microbatches=1,
-            learning_rate=learning_rate)
+            l2_norm_clip=1.0, noise_multiplier=1.1, num_microbatches=1, learning_rate=0.001)
         
-        loss = tf.keras.losses.BinaryCrossentropy()
-        model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
+        model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+        model.fit(X_train_processed, y_train, epochs=3, batch_size=32, verbose=1)
         
-        batch_size = 32
-        epochs = 3
-        mlflow.log_param("batch_size", batch_size)
-        mlflow.log_param("epochs", epochs)
-
-        model.fit(X_train_processed, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
-        
-        # Save only the weights to a file
         weights_path = "model_weights.h5"
         model.save_weights(weights_path)
-        print(f"Model weights saved to {weights_path}")
+        
+        # Log the full model to MLflow with the custom object for later deployment
+        mlflow.tensorflow.log_model(
+            model, 
+            "model", 
+            custom_objects={"DPOptimizerClass": DPKerasAdamOptimizer}
+        )
+        print("Model trained and logged to MLflow.")
 
-        # Return the path to the weights
-        return weights_path
+        return weights_path, run.info.run_id
